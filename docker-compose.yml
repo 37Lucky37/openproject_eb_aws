@@ -44,7 +44,7 @@ services:
       RDS_USERNAME: "openproject_user"
       RDS_PASSWORD: "G6vb3Le52C"
       RDS_DB_NAME: "openproject_db"
-      CI: "false"
+      CI: "true"
     depends_on:
       - postgres
       - memcached

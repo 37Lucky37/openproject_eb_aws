@@ -1,0 +1,57 @@
+etworks:
+  openproject_network:
+    driver: bridge
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres_container
+    restart: always
+    environment:
+      POSTGRES_DB: openproject_db
+      POSTGRES_USER: openproject_user
+      POSTGRES_PASSWORD: G6vb3Le52C
+    ports:
+      - "5432:5432"
+    networks:
+      - openproject_network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  memcached:
+    image: memcached:latest
+    container_name: memcached_container
+    restart: always
+    ports:
+      - "11211:11211"
+    networks:
+      - openproject_network
+
+  openproject:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: openproject_app
+    restart: always
+    environment:
+      SECRET_KEY_BASE: "cf99476b3e3d8c9f1843d20b4cd7f1dc4a5c19c777277bc832c8cb39ce129449bc76f3736dc7d27bb1efdb78e68137663d47ac1e82bb251cddd599777a238505"
+      RAILS_ENV: "production"
+      MEMCACHE_SERVERS: "memcached:11211"
+      OPENPROJECT_HTTPS: "false"
+      MIGRATE_DB: "yes"       
+      PRECOMPILE_ASSETS: "no"
+      RDS_HOSTNAME: "postgres"
+      RDS_USERNAME: "openproject_user"
+      RDS_PASSWORD: "G6vb3Le52C"
+      RDS_DB_NAME: "openproject_db"
+      CI: "false"
+    depends_on:
+      - postgres
+      - memcached
+    ports:
+      - "3001:3000"
+    networks:
+      - openproject_network
+
+volumes:
+  postgres_data:

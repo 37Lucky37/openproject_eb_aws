@@ -1,0 +1,8 @@
+production:
+  adapter: postgresql
+  encoding: unicode
+  pool: 20
+  host: <%= ENV['RDS_HOSTNAME'] %>
+  username: <%= ENV['RDS_USERNAME'] %>
+  password: <%= ENV['RDS_PASSWORD'] %>
+  database: <%= ENV['RDS_DB_NAME'] %>

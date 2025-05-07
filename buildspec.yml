@@ -2,9 +2,9 @@ version: 0.2
 
 env:
   variables:
-    S3_BUCKET: elasticbeanstalk-us-east-1-864981721059       
-    APPLICATION_NAME: openproject-app     
-    ENVIRONMENT_NAME: openproject-env     
+    S3_BUCKET: elasticbeanstalk-us-east-1-864981721059
+    APPLICATION_NAME: openproject-app
+    ENVIRONMENT_NAME: openproject-env
     DEPLOY_PACKAGE: Dockerrun.aws.json
     ZIP_FILE: openproject-deploy.zip
 

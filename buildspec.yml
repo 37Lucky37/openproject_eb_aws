@@ -23,16 +23,17 @@ phases:
 
   post_build:
     commands:
-      - VERSION_LABEL="ver-$(date +%Y%m%d%H%M%S)"
-      - echo "Version label: $VERSION_LABEL"
-      - echo Uploading to S3...
-      - aws s3 cp $ZIP_FILE s3://$S3_BUCKET/$ZIP_FILE
-      - echo Creating new EB Application Version...
-      - aws elasticbeanstalk create-application-version \
+      - |
+        VERSION_LABEL="ver-$(date +%Y%m%d%H%M%S)"
+        echo "Version label: $VERSION_LABEL"
+        echo Uploading to S3...
+        aws s3 cp $ZIP_FILE s3://$S3_BUCKET/$ZIP_FILE
+        echo Creating new EB Application Version...
+        aws elasticbeanstalk create-application-version \
           --application-name $APPLICATION_NAME \
           --version-label $VERSION_LABEL \
           --source-bundle S3Bucket=$S3_BUCKET,S3Key=$ZIP_FILE
-      - echo Updating Environment...
-      - aws elasticbeanstalk update-environment \
+        echo Updating Environment...
+        aws elasticbeanstalk update-environment \
           --environment-name $ENVIRONMENT_NAME \
           --version-label $VERSION_LABEL

@@ -1,64 +1,68 @@
-name: Build and Push OpenProject to ECR
+# name: Build and Push OpenProject to ECR
 
-on:
-  push:
-    branches: [master]
+# on:
+#   push:
+#     branches: [master]
 
-env:
-  AWS_REGION: us-east-1
-  ECR_REPOSITORY: openproject
-  IMAGE_TAG: latest
+# env:
+#   AWS_REGION: us-east-1
+#   ECR_REPOSITORY: openproject
+#   IMAGE_TAG: latest
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+#     steps:
+#     - name: Checkout code
+#       uses: actions/checkout@v3
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+#     - name: Set up Docker Buildx
+#       uses: docker/setup-buildx-action@v3
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
+#     - name: Configure AWS credentials
+#       uses: aws-actions/configure-aws-credentials@v2
+#       with:
+#         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#         aws-region: ${{ env.AWS_REGION }}
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
+#     - name: Login to Amazon ECR
+#       id: login-ecr
+#       uses: aws-actions/amazon-ecr-login@v1
 
-    # - name: Create .env file
-    #   run: |
-    #     echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
-    #     echo "SECRET_KEY_BASE=${{ secrets.SECRET_KEY_BASE }}" >> .env
+#     # - name: Create .env file
+#     #   run: |
+#     #     echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
+#     #     echo "SECRET_KEY_BASE=${{ secrets.SECRET_KEY_BASE }}" >> .env
 
-    - name: Start required services and build OpenProject
-      run: |
-        docker compose up -d --build
-        echo "Waiting for OpenProject to be ready..."
-        until docker logs openproject_app 2>&1 | grep -q "CI checks passed successfully!"; do
-          echo "Still waiting..."; sleep 20;
-          echo "Last 20 lines of OpenProject logs:"
-          docker logs --tail 20 openproject_app
-        done
-        docker compose ps
-        docker logs openproject_app
+#     - name: Start required services and build OpenProject
+#       run: |
+#         docker compose up -d --build
+#         echo "Waiting for OpenProject to be ready..."
+#         until docker logs openproject_app 2>&1 | grep -q "CI checks passed successfully!"; do
+#           echo "Still waiting..."; sleep 20;
+#           echo "Last 20 lines of OpenProject logs:"
+#           docker logs --tail 20 openproject_app
+#         done
+#         docker compose ps
+#         docker logs openproject_app
 
         
-    - name: Show available images
-      run: docker images
+#     - name: Show available images
+#       run: docker images
 
-    - name: Tag and Push to ECR
-      run: |
-        IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
-        docker tag openproject_eb_aws-openproject $IMAGE_URI
-        docker push $IMAGE_URI
+#     - name: Tag and Push to ECR
+#       run: |
+#         IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+#         docker tag openproject_eb_aws-openproject $IMAGE_URI
+#         docker push $IMAGE_URI
 
-    - name: Cleanup
-      run: |
-        docker compose down --remove-orphans
-        docker rmi ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} || true
+#     - name: Cleanup
+#       run: |
+#         docker compose down --remove-orphans
+#         docker rmi ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} || true
+
+#     - name: Trigger AWS CodeBuild
+#       run: |
+#         aws codebuild start-build --project-name ${{ secrets.CODEBUILD_PROJECT_NAME }}

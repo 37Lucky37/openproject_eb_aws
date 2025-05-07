@@ -1,0 +1,36 @@
+version: 0.2
+
+env:
+  variables:
+    S3_BUCKET: elasticbeanstalk-us-east-1-864981721059       
+    APPLICATION_NAME: openproject-app     
+    ENVIRONMENT_NAME: openproject-env     
+    DEPLOY_PACKAGE: Dockerrun.aws.json
+    ZIP_FILE: openproject-deploy.zip
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.11
+    commands:
+      - echo Installing AWS CLI...
+      - pip install --upgrade awscli
+
+  build:
+    commands:
+      - echo Packaging $DEPLOY_PACKAGE...
+      - zip -r $ZIP_FILE $DEPLOY_PACKAGE
+
+  post_build:
+    commands:
+      - echo Uploading to S3...
+      - aws s3 cp $ZIP_FILE s3://$S3_BUCKET/$ZIP_FILE
+      - echo Creating new EB Application Version...
+      - aws elasticbeanstalk create-application-version \
+          --application-name $APPLICATION_NAME \
+          --version-label "ver-$(date +%Y%m%d%H%M%S)" \
+          --source-bundle S3Bucket=$S3_BUCKET,S3Key=$ZIP_FILE
+      - echo Updating Environment...
+      - aws elasticbeanstalk update-environment \
+          --environment-name $ENVIRONMENT_NAME \
+          --version-label "ver-$(date +%Y%m%d%H%M%S)"

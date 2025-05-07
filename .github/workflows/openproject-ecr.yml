@@ -27,41 +27,41 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
 
-    # - name: Login to Amazon ECR
-    #   id: login-ecr
-    #   uses: aws-actions/amazon-ecr-login@v1
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
 
-    # # - name: Create .env file
-    # #   run: |
-    # #     echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
-    # #     echo "SECRET_KEY_BASE=${{ secrets.SECRET_KEY_BASE }}" >> .env
-
-    # - name: Start required services and build OpenProject
+    # - name: Create .env file
     #   run: |
-    #     docker compose up -d --build
-    #     echo "Waiting for OpenProject to be ready..."
-    #     until docker logs openproject_app 2>&1 | grep -q "CI checks passed successfully!"; do
-    #       echo "Still waiting..."; sleep 20;
-    #       echo "Last 20 lines of OpenProject logs:"
-    #       docker logs --tail 20 openproject_app
-    #     done
-    #     docker compose ps
-    #     docker logs openproject_app
+    #     echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
+    #     echo "SECRET_KEY_BASE=${{ secrets.SECRET_KEY_BASE }}" >> .env
+
+    - name: Start required services and build OpenProject
+      run: |
+        docker compose up -d --build
+        echo "Waiting for OpenProject to be ready..."
+        until docker logs openproject_app 2>&1 | grep -q "CI checks passed successfully!"; do
+          echo "Still waiting..."; sleep 20;
+          echo "Last 20 lines of OpenProject logs:"
+          docker logs --tail 20 openproject_app
+        done
+        docker compose ps
+        docker logs openproject_app
 
         
-    # - name: Show available images
-    #   run: docker images
+    - name: Show available images
+      run: docker images
 
-    # - name: Tag and Push to ECR
-    #   run: |
-    #     IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
-    #     docker tag openproject_eb_aws-openproject $IMAGE_URI
-    #     docker push $IMAGE_URI
+    - name: Tag and Push to ECR
+      run: |
+        IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+        docker tag openproject_eb_aws-openproject $IMAGE_URI
+        docker push $IMAGE_URI
 
-    # - name: Cleanup
-    #   run: |
-    #     docker compose down --remove-orphans
-    #     docker rmi ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} || true
+    - name: Cleanup
+      run: |
+        docker compose down --remove-orphans
+        docker rmi ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} || true
 
     - name: Trigger AWS CodeBuild
       run: |

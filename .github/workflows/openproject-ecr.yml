@@ -2,7 +2,7 @@ name: Build and Push OpenProject to ECR
 
 on:
   push:
-    branches: [master]
+    branches: [develop]
 
 env:
   AWS_REGION: us-east-1
